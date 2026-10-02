@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import 'package:todo_app/for_students_add.dart';
+import 'package:todo_app/todo_app.dart';
 
 class StudentEditScreen extends StatefulWidget {
   final Student studentId;
@@ -18,9 +18,13 @@ class _StudentEditScreenState extends State<StudentEditScreen> {
     String name = nameController.text;
     String fatherName = fatherNameController.text;
 
-    final newStudents = Student(name: name, fatherName: fatherName);
-    Navigator.pop(context, newStudents);
+    final newStudents = Student(id: widget.studentId.id, name: name, fatherName: fatherName);
+    Navigator.pop(context, newStudents);  
   }
+
+
+
+  
 
   @override
   void initState() {
@@ -28,7 +32,6 @@ class _StudentEditScreenState extends State<StudentEditScreen> {
     nameController.text = widget.studentId.name;
     fatherNameController.text = widget.studentId.fatherName;
   }
-
   Widget build(BuildContext context) {
     return Scaffold(
       body: Column(
