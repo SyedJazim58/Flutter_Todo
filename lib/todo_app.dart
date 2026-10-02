@@ -3,11 +3,12 @@ import 'package:todo_app/for_students_add.dart';
 import 'package:todo_app/student_edit_screen.dart';
 
 class Student {
+  int id;
   String name;
-  String fathername;
+  String fatherName;
   List<String>? subjects;
 
-  Student({required this.name, required this.fathername, this.subjects});
+  Student({required this.id, required this.name, required this.fatherName, this.subjects});
 }
 
 class TodoApp extends StatelessWidget {
@@ -37,29 +38,38 @@ class _StudentAppState extends State<StudentApp> {
   // }
 
   Future<void> showAddStudent() async {
-    final student = await Navigator.push<Student>(
+    final newStudent = await Navigator.push<Student>(
       context,
       MaterialPageRoute(builder: (context) => const ForStudentAdd()),
     );
 
-    if (student != null) {
+    if (newStudent != null && newStudent is Student) {
       setState(() {
-        students.add(student);
+        students.add(newStudent);
       });
     }
   }
 
-  void removeStudents(int index) {
+  void removeStudents(Student studentId) {
     setState(() {
-      students.removeAt(index);
+      students.remove(studentId);
     });
   }
 
-  void editStudent(Student studenId) async {
-    final result = await Navigation.push(
+  void editStudent(Student studentId) async {
+    final result = await Navigator.push<Student>(
       context,
-      MaterialPageRoute(builder: (context) => editStudent(studentId)),
+      MaterialPageRoute(
+        builder: (context) => StudentEditScreen(studentId: studentId),
+      ),
     );
+
+
+    int foundIndex = students.indexWhere(
+      (student) => student.id == result.id);
+    students[foundIndex] = result;
+
+    setState(() {});
   }
 
   @override
@@ -72,7 +82,11 @@ class _StudentAppState extends State<StudentApp> {
         itemCount: students.length,
         shrinkWrap: true,
         itemBuilder: (context, index) {
-          return StudentCard(student: students[index]);
+          return StudentCard(
+            student: students[index],
+            onDelete: removeStudents,
+            onEdit: editStudent,
+          );
         },
       ),
 
@@ -96,8 +110,15 @@ class _StudentAppState extends State<StudentApp> {
 
 class StudentCard extends StatelessWidget {
   final Student student;
+  final Function(Student) onDelete;
+  final Function(Student) onEdit;
 
-  const StudentCard({super.key, required this.student});
+  const StudentCard({
+    super.key,
+    required this.student,
+    required this.onDelete,
+    required this.onEdit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -109,16 +130,37 @@ class StudentCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        spacing: 20,
         children: [
-          Text(
-            student.name,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                student.name,
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+              const SizedBox(height: 6),
+              Text("Father's name: ${student.fatherName}"),
+            ],
           ),
-          const SizedBox(height: 6),
-          Text("Father's name: ${student.fathername}"),
-          IconButton(onPressed: removeStudents, icon: Icon(Icons.delete)),
-          IconButton(onPressed: editStudents, icon: Icon(Icons.delete)),
+          Row(
+            spacing: 8,
+            children: [
+              IconButton(
+                onPressed: () {
+                  onDelete(student);
+                },
+                icon: Icon(Icons.delete),
+              ),
+              IconButton(
+                onPressed: () {
+                  onEdit(student);
+                },
+                icon: Icon(Icons.edit),
+              ),
+            ],
+          ),
         ],
       ),
     );
